@@ -1,6 +1,7 @@
 # csgo_rank_finder
-1. Run main.py
-2. Copy-paste the 'status' command output (starting with #userid and till #end) from csgo console to the input and wait for the results. 
+1. ```pip install -r requirements.txt``` to install the dependencies.
+2. Run main.py
+3. Copy-paste the 'status' command output (starting with #userid and till #end) from csgo console to the input and wait for the results. 
 
 **Note : The results may take some time to show based on the number of players in the input/server.**
 
