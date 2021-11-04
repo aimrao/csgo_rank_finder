@@ -105,30 +105,41 @@ def find_rank_new(steam64id):
                     html_text = sc.get(url).text
                     flag = True
                 except:
-                    time.sleep(2)
+                    # time.sleep(2)
                     continue
             soup = BeautifulSoup(html_text, 'lxml')
             rank = soup.find('div', style="float:right; width:92px; height:120px; padding-top:56px; margin-left:32px;")
             wins = soup.find('span', id='competitve-wins')
             name = soup.find('div', id='player-name')
 
-            try:
-                player = name.text
-            except:
-                player = "Unknown"
-            try:
-                curr_rank = ranks[rank.img['src'].split('/')[-1].split('.')[0]]
-            except:
-                curr_rank = "Unknown"
-            try:
-                best_rank = ranks[rank.div.img['src'].split('/')[-1].split('.')[0]]
-            except:
-                best_rank = "Unknown"
+            fetch_count = 0
+            player = name.text
             try:
                 total_wins = wins.span.text
             except:
                 total_wins = "Unknown"
-
+            
+            while(fetch_count!=2):
+                try:
+                    curr_rank = ranks[rank.img['src'].split('/')[-1].split('.')[0]]
+                    fetch_count+=1
+                except:
+                    try:
+                        curr_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
+                        fetch_count+=1
+                    except:
+                        continue
+                
+                try:
+                    best_rank = ranks[rank.div.img['src'].split('/')[-1].split('.')[0]]
+                    fetch_count+=1
+                except:
+                    try:
+                        best_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
+                        fetch_count+=1
+                    except:
+                        continue
+            
             rows.append([player, curr_rank, best_rank, total_wins])
             # print("{:<25}[Rank : {:<5}] [Best : {:<5}] [Wins : {:<5}]".format(player,curr_rank,best_rank,total_wins))
 
