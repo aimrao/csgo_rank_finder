@@ -1,8 +1,14 @@
 # csgo_rank_finder
-1. ```pip install -r requirements.txt``` to install the dependencies.
-2. Run main.py
-3. Copy-paste the 'status' command output (starting with #userid and till #end) from csgo console to the input and wait for the results. 
 
+## 1. Local Python App
+        1. ```pip install -r requirements.txt``` to install the dependencies.
+        2. Run main.py
+        3. Copy-paste the 'status' command output (starting with #userid and till #end) from csgo console to the input and wait for the results.
+        
+## 2. Dockerized Flask App
+        1. Install docker and docker-compose.
+        2. Run ```docker-compose up -d``` and the flask app will be deployed on http://0.0.0.0:80 on your local machine or at http://server-ip:80 if run on a server like aws, gcp, etc.
+        
 **Note : The results may take some time to show based on the number of players in the input/server.**
 
 # Sample Inputs
