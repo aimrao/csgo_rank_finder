@@ -1,9 +1,11 @@
 import webbrowser
-import json, requests, time
+import requests
 from bs4 import BeautifulSoup
 from prettytable import PrettyTable
 import cloudscraper
 
+#Fill this list with steam ID of your friends to exclude them from the search
+friends = [76561198404529974,76561198816159059, 76561198430918852, 76561198435814829, 76561198807553119, 76561198405059981, 76561198059938292, 76561198401931678]
 
 def steamid_to_64bit(steamid):
     steam64id = 76561197960265728 # kinda Seed                                 
@@ -38,13 +40,14 @@ def take_input():
 
 
 def reveal_rank(steam64):
+    
+    global friends
+    
     webbrowser.register('chrome',
         None,
         webbrowser.BackgroundBrowser("C://Program Files//Google//Chrome//Application//chrome.exe")
         )
-    
-    friends = [76561198404529974,76561198816159059, 76561198430918852, 76561198435814829, 76561198807553119, 76561198405059981, 76561198059938292, 76561198401931678]
-    
+        
     
     for i in steam64:
         if i in friends:
@@ -54,7 +57,7 @@ def reveal_rank(steam64):
     
 def find_rank(steam64id):
     
-    friends = [76561198404529974,76561198816159059, 76561198430918852, 76561198435814829, 76561198807553119, 76561198405059981, 76561198059938292, 76561198401931678]
+    global friends
 
     for id in steam64id:
         if id not in friends:
@@ -70,7 +73,8 @@ def find_rank(steam64id):
 
 def find_rank_new(steam64id):
     
-    friends = [76561198404529974,76561198816159059, 76561198430918852, 76561198435814829, 76561198807553119, 76561198405059981, 76561198059938292, 76561198401931678]
+    global friends
+
     rows = []
     tb = PrettyTable()
 
@@ -105,8 +109,8 @@ def find_rank_new(steam64id):
                     html_text = sc.get(url).text
                     flag = True
                 except:
-                    # time.sleep(2)
                     continue
+                
             soup = BeautifulSoup(html_text, 'lxml')
             rank = soup.find('div', style="float:right; width:92px; height:120px; padding-top:56px; margin-left:32px;")
             wins = soup.find('span', id='competitve-wins')
@@ -118,7 +122,7 @@ def find_rank_new(steam64id):
                 total_wins = wins.span.text
             except:
                 total_wins = "Unknown"
-            
+            tries = 3
             while(fetch_count!=2):
                 try:
                     curr_rank = ranks[rank.img['src'].split('/')[-1].split('.')[0]]
@@ -128,8 +132,13 @@ def find_rank_new(steam64id):
                         curr_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
                         fetch_count+=1
                     except:
-                        continue
-                
+                        if tries>0:
+                            tries -= 1
+                            continue
+                        curr_rank = "Unranked"
+                        fetch_count+=1
+                        
+                tries = 3
                 try:
                     best_rank = ranks[rank.div.img['src'].split('/')[-1].split('.')[0]]
                     fetch_count+=1
@@ -138,10 +147,13 @@ def find_rank_new(steam64id):
                         best_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
                         fetch_count+=1
                     except:
-                        continue
+                        if tries>0:
+                            tries -= 1
+                            continue
+                        curr_rank = "Unranked"
+                        fetch_count+=1
             
             rows.append([player, curr_rank, best_rank, total_wins])
-            # print("{:<25}[Rank : {:<5}] [Best : {:<5}] [Wins : {:<5}]".format(player,curr_rank,best_rank,total_wins))
 
     tb.field_names = ['Name', 'Rank', 'Best', 'Wins']
     tb.add_rows(rows)
