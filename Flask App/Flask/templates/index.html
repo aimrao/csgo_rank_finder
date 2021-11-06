@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} csgo-rank-finder {% endblock %}</h1>
     {% for info in result %}
         <a href={{ info[4] }}>
             <h2>{{ info[0] }}</h2>

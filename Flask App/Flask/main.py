@@ -105,7 +105,7 @@ def find_rank_new(steam64id):
                         if tries>0:
                             tries -= 1
                             continue
-                        curr_rank = "Unranked"
+                        best_rank = "Unranked"
                         fetch_count+=1
             
             rows.append([player, curr_rank, best_rank, total_wins, url])
