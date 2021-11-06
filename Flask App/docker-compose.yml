@@ -1,12 +1,13 @@
 version: '3'
 services:
   app:
-    build: flask
+    build: Flask
     volumes:
       - app:/app
-    ports:      - "8000:8000"
+    ports:     
+      - "8000:8000"
   proxy:
-    build: nginx
+    build: Nginx
     restart: always
     ports:
       - 80:80
