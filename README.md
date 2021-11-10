@@ -1,5 +1,7 @@
 # csgo_rank_finder
 
+**Info : Flask App is Live [here](http://pr0noobs.ddns.net/). If anyone is interested in improving the frontend, please create an issue and we can discuss.** 
+
 ## 1. Local Python App
         1. ```pip install -r requirements.txt``` to install the dependencies.
         2. Run main.py
