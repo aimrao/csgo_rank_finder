@@ -3,7 +3,7 @@ from main import *
 
 app = Flask(__name__)
 app.secret_key = "a@egWYRasdasda1231~fkQ=lyN"
-
+app.static_folder = 'static'
 
 @app.route('/', methods=('GET', 'POST'))
 def index():
@@ -12,8 +12,7 @@ def index():
         tries = 3
         while(tries):
             try:
-                flash(
-                    'Query submitted, please wait while we reveal the ranks...', 'info')
+                flash('Query submitted, please wait while we reveal the ranks...', 'info')
                 tb = find_rank_new(take_input(content))
                 tries = 0
                 if not content:
@@ -34,5 +33,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.secret_key = "a@egWYRasdasda1231~fkQ=lyN"
     app.run(host="0.0.0.0", debug=False)
