@@ -27,7 +27,7 @@ def index():
                     return render_template('index.html', result=tb)
             except:
                 session.pop('_flashes', None)
-                flash('Invalid console output, make sure to copy the entire console output of status command. If the status command output is correct please retry submit button 2-3 times as it might be the issue with scraper.', 'danger')
+                flash('Invalid console output, make sure to copy the entire console output of status command. If the status command output is correct please retry submit button 2-3 times as it might be the internal server issue.', 'danger')
                 tries -= 1
     return render_template('create.html')
 
