@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import cloudscraper
+from dynamodb_helper import get_player, add_player
 
 #Fill this list with steam ID of your friends to exclude them from the search
 friends = [76561198404529974,76561198816159059, 76561198430918852, 76561198435814829, 76561198807553119, 76561198405059981, 76561198059938292, 76561198401931678]
@@ -33,81 +34,89 @@ def find_rank_new(steam64id):
     global friends
     rows = []
 
-    for id in steam64id:
+    for id in steam64id:         
         if id not in friends:
-            url = 'https://csgostats.gg/player/' + str(id)
-
-            ranks = {
-                "1":"S1",
-                "2":"S2",
-                "3":"S3",
-                "4":"S4",
-                "5":"SE",
-                "6":"SEM",
-                "7":"GN1",
-                "8":"GN2",
-                "9":"GN3",
-                "10":"GNM",
-                "11":"MG1",
-                "12":"MG2",
-                "13":"MGE",
-                "14":"DMG",
-                "15":"LE",
-                "16":"LEM",
-                "17":"SMFC",
-                "17":"GE"
-            }
-            flag = False
-            while not flag:
-                try:
-                    sc = cloudscraper.create_scraper()
-                    html_text = sc.get(url).text
-                    flag = True
-                except:
-                    continue
-
-            soup = BeautifulSoup(html_text, 'lxml')
-            rank = soup.find('div', style="float:right; width:92px; height:120px; padding-top:56px; margin-left:32px;")
-            wins = soup.find('span', id='competitve-wins')
-            name = soup.find('div', id='player-name')
-
-            fetch_count = 0
-            player = name.text
             try:
-                total_wins = wins.span.text
-            except:
-                total_wins = "Unknown"
-            tries = 3
-            while(fetch_count!=2):
-                try:
-                    curr_rank = ranks[rank.img['src'].split('/')[-1].split('.')[0]]
-                    fetch_count+=1
-                except:
+                response = get_player(id)['Item']
+                player      = response['steam_name']
+                curr_rank   = response['current_rank']
+                best_rank   = response['best_rank']
+                total_wins  = response['wins']
+                url         = response['profile_url']
+            except KeyError:
+                url = 'https://csgostats.gg/player/' + str(id)
+
+                ranks = {
+                    "1":"S1",
+                    "2":"S2",
+                    "3":"S3",
+                    "4":"S4",
+                    "5":"SE",
+                    "6":"SEM",
+                    "7":"GN1",
+                    "8":"GN2",
+                    "9":"GN3",
+                    "10":"GNM",
+                    "11":"MG1",
+                    "12":"MG2",
+                    "13":"MGE",
+                    "14":"DMG",
+                    "15":"LE",
+                    "16":"LEM",
+                    "17":"SMFC",
+                    "17":"GE"
+                }
+                flag = False
+                while not flag:
                     try:
-                        curr_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
-                        fetch_count+=1
+                        sc = cloudscraper.create_scraper()
+                        html_text = sc.get(url).text
+                        flag = True
                     except:
-                        if tries>0:
-                            tries -= 1
-                            continue
-                        curr_rank = "Unranked"
-                        fetch_count+=1
-                        
+                        continue
+
+                soup = BeautifulSoup(html_text, 'lxml')
+                rank = soup.find('div', style="float:right; width:92px; height:120px; padding-top:56px; margin-left:32px;")
+                wins = soup.find('span', id='competitve-wins')
+                name = soup.find('div', id='player-name')
+
+                fetch_count = 0
+                player = name.text
+                try:
+                    total_wins = wins.span.text
+                except:
+                    total_wins = "Unknown"
                 tries = 3
-                try:
-                    best_rank = ranks[rank.div.img['src'].split('/')[-1].split('.')[0]]
-                    fetch_count+=1
-                except:
+                while(fetch_count!=2):
                     try:
-                        best_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
+                        curr_rank = ranks[rank.img['src'].split('/')[-1].split('.')[0]]
                         fetch_count+=1
                     except:
-                        if tries>0:
-                            tries -= 1
-                            continue
-                        best_rank = "Unranked"
+                        try:
+                            curr_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
+                            fetch_count+=1
+                        except:
+                            if tries>0:
+                                tries -= 1
+                                continue
+                            curr_rank = "Unranked"
+                            fetch_count+=1
+                            
+                    tries = 3
+                    try:
+                        best_rank = ranks[rank.div.img['src'].split('/')[-1].split('.')[0]]
                         fetch_count+=1
-            
+                    except:
+                        try:
+                            best_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
+                            fetch_count+=1
+                        except:
+                            if tries>0:
+                                tries -= 1
+                                continue
+                            best_rank = "Unranked"
+                            fetch_count+=1
+                add_player(steam_id=id,name=player,curr_rank=curr_rank,best_rank=best_rank,wins=total_wins,profile_url=url)
             rows.append([player, curr_rank, best_rank, total_wins, url])
 
     return rows
