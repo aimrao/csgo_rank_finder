@@ -106,7 +106,7 @@ def find_rank_new(steam64id):
             rows.append([player_name, curr_rank, best_rank, total_wins, headshot_rate, kills_per_death])
 
     tb = PrettyTable()
-    tb.field_names = ['Name', 'Rank', 'Best', 'Wins', "Headshot %", "K/D"]
+    tb.field_names = ['Name', 'Rank', 'Best', 'Wins', "HS %", "K/D"]
     tb.add_rows(rows)
     print(tb)
 
