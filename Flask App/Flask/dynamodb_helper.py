@@ -16,7 +16,7 @@ resource = resource(
 
 csgo_players = resource.Table('csgo_players')
 
-def add_player(steam_id, name, curr_rank, best_rank, wins, profile_url ):
+def add_player(steam_id, name, curr_rank, best_rank, wins, profile_url, hsrate, kpd ):
 
     response = csgo_players.put_item(
         Item = {
@@ -25,6 +25,8 @@ def add_player(steam_id, name, curr_rank, best_rank, wins, profile_url ):
             'current_rank'  : curr_rank,
             'best_rank'     : best_rank,
             'wins'          : wins,
+            'hsrate'        : hsrate,
+            'kpd'           : kpd,
             'profile_url'   : profile_url,
             'ttl'           : int((dt.fromtimestamp(time()) + timedelta(1)).timestamp())
         }
@@ -39,7 +41,7 @@ def get_player(steam_id):       # Output Example - {'profile_url': 'pr0noobs.ddn
             'steam_id'     : steam_id
         },
         AttributesToGet=[
-            'steam_name', 'current_rank', 'best_rank', 'wins', 'profile_url'
+            'steam_name', 'current_rank', 'best_rank', 'wins', 'hsrate', 'kpd', 'profile_url'
         ]
     )
 
