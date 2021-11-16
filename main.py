@@ -1,12 +1,30 @@
-import webbrowser
-import requests
 from bs4 import BeautifulSoup
 from prettytable import PrettyTable
-import cloudscraper
+import cloudscraper, json, re
+
+
+#<-------------------------Global Variables [start]------------------------->#
 
 #Fill this list with steam ID of your friends to exclude them from the search
 friends = [76561198404529974,76561198816159059, 76561198430918852, 76561198435814829, 76561198807553119, 76561198405059981, 76561198059938292, 76561198401931678]
 
+
+#All CSGO Ranks
+ranks = {
+                1:"S1",     2:"S2",     3:"S3",     4:"S4",     5:"SE",     6:"SEM",    # Silver
+                7:"GN1",    8:"GN2",    9:"GN3",    10:"GNM",                           # Gold Nova
+                11:"MG1",   12:"MG2",   13:"MGE",   14:"DMG",                           # Master Guardian       
+                15:"LE",    16:"LEM",                                                   # Legendary Eagle            
+                17:"SMFC",                                                              # Supreme
+                18:"GE"                                                                 # Global 
+        }
+#<-------------------------Global Variables [end]--------------------------->#
+
+
+
+#<----------------------------Modules [start]------------------------------->#
+
+#1. Convert steamid to steam64id, e.g. STEAM_1:1:607974202 to 76561198402829974
 def steamid_to_64bit(steamid):
     steam64id = 76561197960265728 # kinda Seed                                 
     id_split = steamid.split(":")
@@ -18,6 +36,7 @@ def steamid_to_64bit(steamid):
         steam64id += 1
     return steam64id
 
+#2. Take input and format 'status' command output for extracting the steamids
 def take_input():
     s=""
     res=""
@@ -38,128 +57,61 @@ def take_input():
         steam64.add(steamid_to_64bit(i))
     return steam64
 
-
-def reveal_rank(steam64):
-    
-    global friends
-    
-    webbrowser.register('chrome',
-        None,
-        webbrowser.BackgroundBrowser("C://Program Files//Google//Chrome//Application//chrome.exe")
-        )
-        
-    
-    for i in steam64:
-        if i in friends:
+#3. Scrape the stats website for a particular steam64id
+def scraper(id):
+    url = 'https://csgostats.gg/player/' + str(id)
+    flag = False
+    while not flag:
+        try:
+            sc = cloudscraper.create_scraper()
+            html_text = sc.get(url).text
+            flag = True
+        except:
             continue
-        url = 'https://csgostats.gg/player/'+str(i)
-        webbrowser.get('chrome').open(url)
-    
-def find_rank(steam64id):
-    
-    global friends
+        
+    p = re.compile('var stats = .*')
+    soup = BeautifulSoup(html_text, 'lxml')
+    name = soup.find('div', id='player-name')
+    scripts = soup.find_all('script')
+    data = ''
+    for script in scripts:
+        try:
+            m = p.match(script.string.strip())
+            if m:
+                data = m.group()
+                break
+        except:
+            continue
 
-    for id in steam64id:
-        if id not in friends:
-            url = 'https://csgo-stats.com/player/' + str(id)
+    data_json = json.loads(data[12:-1])
+    data_json['player_name'] = name.text
+    return data_json
 
-            r = requests.get(url=url, )
-            soup = BeautifulSoup(r.text, 'lxml')
-
-            rank = soup.find('span', class_='rank-name')
-            name = soup.find('div', class_='title-card')
-            print("{} : {}".format(name.h1.text,rank.text))
-
-
+#4. Find ranks and other stats of the user and return the result in a pretty table
 def find_rank_new(steam64id):
     
-    global friends
+    global friends, ranks
 
     rows = []
-    tb = PrettyTable()
-
+    
     for id in steam64id:
         if id not in friends:
-            url = 'https://csgostats.gg/player/' + str(id)
+            data_json = scraper(id)
+            player_name = data_json['player_name']
+            curr_rank = ranks[data_json['rank']]
+            best_rank = ranks[data_json['best']['rank']]
+            total_wins = data_json['comp_wins']
+            headshot_rate = data_json['overall']['hs']
+            kills_per_death = data_json['overall']['kpd'] 
+            rows.append([player_name, curr_rank, best_rank, total_wins, headshot_rate, kills_per_death])
 
-            ranks = {
-                "1":"S1",
-                "2":"S2",
-                "3":"S3",
-                "4":"S4",
-                "5":"SE",
-                "6":"SEM",
-                "7":"GN1",
-                "8":"GN2",
-                "9":"GN3",
-                "10":"GNM",
-                "11":"MG1",
-                "12":"MG2",
-                "13":"MGE",
-                "14":"DMG",
-                "15":"LE",
-                "16":"LEM",
-                "17":"SMFC",
-                "17":"GE"
-            }
-            flag = False
-            while not flag:
-                try:
-                    sc = cloudscraper.create_scraper()
-                    html_text = sc.get(url).text
-                    flag = True
-                except:
-                    continue
-                
-            soup = BeautifulSoup(html_text, 'lxml')
-            rank = soup.find('div', style="float:right; width:92px; height:120px; padding-top:56px; margin-left:32px;")
-            wins = soup.find('span', id='competitve-wins')
-            name = soup.find('div', id='player-name')
-
-            fetch_count = 0
-            player = name.text
-            try:
-                total_wins = wins.span.text
-            except:
-                total_wins = "Unknown"
-            tries = 3
-            while(fetch_count!=2):
-                try:
-                    curr_rank = ranks[rank.img['src'].split('/')[-1].split('.')[0]]
-                    fetch_count+=1
-                except:
-                    try:
-                        curr_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
-                        fetch_count+=1
-                    except:
-                        if tries>0:
-                            tries -= 1
-                            continue
-                        curr_rank = "Unranked"
-                        fetch_count+=1
-                        
-                tries = 3
-                try:
-                    best_rank = ranks[rank.div.img['src'].split('/')[-1].split('.')[0]]
-                    fetch_count+=1
-                except:
-                    try:
-                        best_rank = ranks[rank.img['data-cfsrc'].split('/')[-1].split('.')[0]]
-                        fetch_count+=1
-                    except:
-                        if tries>0:
-                            tries -= 1
-                            continue
-                        curr_rank = "Unranked"
-                        fetch_count+=1
-            
-            rows.append([player, curr_rank, best_rank, total_wins])
-
-    tb.field_names = ['Name', 'Rank', 'Best', 'Wins']
+    tb = PrettyTable()
+    tb.field_names = ['Name', 'Rank', 'Best', 'Wins', "Headshot %", "K/D"]
     tb.add_rows(rows)
     print(tb)
 
+#<----------------------------Modules [end]--------------------------------->#
 
-# reveal_rank(take_input())
-# find_rank(take_input())
+
+
 find_rank_new(take_input())
