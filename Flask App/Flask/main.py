@@ -10,7 +10,8 @@ friends = [76561198404529974,76561198816159059, 76561198430918852, 7656119843581
 
 
 #All CSGO Ranks
-ranks = {
+ranks = {       
+                0:"Unranked",
                 1:"S1",     2:"S2",     3:"S3",     4:"S4",     5:"SE",     6:"SEM",    # Silver
                 7:"GN1",    8:"GN2",    9:"GN3",    10:"GNM",                           # Gold Nova
                 11:"MG1",   12:"MG2",   13:"MGE",   14:"DMG",                           # Master Guardian       
