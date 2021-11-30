@@ -39,11 +39,11 @@ def steamid_to_64bit(steamid):
 
 #2. Format 'status' command output and extract the steamids
 def take_input(console_output):
-    n = len(console_output.split('\n'))
+    n = len(console_output)
     steam_id = []
-    for i in range(1,n):
+    for i in range(n):
         try:
-            steam_id.append(console_output.split('\n')[i].split()[-6])
+            steam_id.append(console_output[i].split()[-6])
         except:
             continue
     steam64 = set()
