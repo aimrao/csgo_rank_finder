@@ -32,7 +32,7 @@ def index():
             tb_str.field_names = ['Name', 'Rank', 'Best', 'Wins', 'HS %', 'K/D']
             tb_str.add_rows(val[:6] for val in tb)
             tb.append(tb_str)
-            flash('Hooray! Ranks revealed.', 'success')
+            flash('Hooray! ' + str(len(tb)-1) + ' ranks got revealed.', 'success')
             return render_template('index.html', result=tb)
         except Exception as e:
             flash('Invalid/Empty console output given', 'danger')
